@@ -65,17 +65,31 @@ router.post("/login", async (req, res) => {
         //  2) 이메일을 소문자로 바꿔 활성화된 유저(isActive: true)만 조회한다. .findOne() /.toLowerCase()
         const user = await User.findOne({
             email: email.toLowerCase(),
-            isActive: true
+        //    isActive: true    // 제약 : 활성화된 계정만 
         })
 
         //  3) 유저가 없거나 비밀번호가 틀리면 같은 에러 메시지를 반환한다.
         const invalidMsg = { message: "이메일 또는 비밀번호가 올바르지 않습니다." }
+        
+        if (!user.isActive) return res.status(403).json({message:"비활성화된 계정입니다. 관리자에게 문의하세요."})
 
         if (!user) return res.status(400).json({ message: "이메일이 올바르지 않습니다" })
 
         // 4)비밀번호 비교 (User 모델에 comparePassword 메서드가 있다고 가정)
         const ok = await user.comparePassword(password)
-        if (!ok) return res.status(400).json({ message: "비밀번호가 올바르지 않습니다." })
+        if (!ok) {
+            
+            //+과제 : 로그인 실패 횟수 증감, 5회 실패 => 계정 비활성화
+            user.loginAttempts +=1
+            if(user.loginAttempts>=5){
+                user.isActive=false
+            }
+
+            await user.save()
+            
+            
+            return res.status(400).json({ message: "비밀번호가 올바르지 않습니다.",warning:`로그인 실패 횟수 ${user.loginAttempts}` })
+        }
 
 
         // 4) 성공 시 유저 문서에 isLoggined = true, lastLoginAt = 현재시간 으로 업데이트한다.
@@ -103,14 +117,14 @@ router.post("/login", async (req, res) => {
         })
 
         return res.status(200).json({
-            user:updated.toSafeJSON(),
+            user: updated.toSafeJSON(),
             token
         })
 
     } catch (error) {
         return res.status(500).json({
-            message:"로그인 실패",
-            error:error.message
+            message: "로그인 실패",
+            error: error.message
         })
     }
 })
@@ -129,7 +143,7 @@ router.get("/me", async (req, res) => {
         if (!user) return res.status(404).json({ message: "사용자 없음" })
 
         res.status(200).json(user.toSafeJSON())
-   
+
     } catch (error) {
 
         res.status(401).json({ message: "토큰 무효", error: error.message })
