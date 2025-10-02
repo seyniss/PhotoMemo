@@ -1,16 +1,20 @@
+import './App.scss'
 import { Routes, Route } from "react-router-dom"
+import AuthPanel from './components/AuthPanel'
 import Landing from "./pages/Landing"
-
-import './App.css'
 
 function App() {
 
 
   return (
-    <Routes>
-     <Route path="/" element={<Landing />}/>
+    <div className="page">
 
-    </Routes>
+      <Routes>  
+        <Route path="/" element={<Landing />}/>
+        <Route path="/admin/login" element={<AuthPanel />}/>
+
+      </Routes>
+    </div>
   )
 }
 
