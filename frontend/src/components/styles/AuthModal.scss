@@ -1,0 +1,30 @@
+.am-backdrop{
+    position: fixed;
+    inset:0;
+    background-color: rgba(0, 0, 0, 0.315);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .am-panel{
+        background-color: var(--bg);
+        position:relative;
+        width:min(92vw,42rem);
+        border-radius: var(--radius-l);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.315);
+        padding: 2rem;
+
+        .am-tabs{
+            display: flex;
+            gap:.8rem;
+            margin-bottom: 1.2rem;
+            button{
+                flex:1;
+
+                &.on{
+                    background-color: var(--text);
+                    color:var(--bg);
+                }
+            }
+        }
+    }
+}
